@@ -35,6 +35,10 @@ When adding a new MCP server, you must update the README.md to include your serv
 GitHub provides additional document on [forking a repository](https://help.github.com/articles/fork-a-repo/) and
 [creating a pull request](https://help.github.com/articles/creating-a-pull-request/).
 
+### Automated PR review
+
+Non-draft pull requests are reviewed by [anthropics/claude-code-action](https://github.com/anthropics/claude-code-action), which posts findings categorized as **Blocker**, **Suggestion**, or **Nit**. The workflow is `.github/workflows/claude-code-review.yml`. To suppress the automated review on a specific PR (e.g., release branches, generated code), add the `skip-claude-review` label. Reviews on diffs larger than 5000 lines are skipped automatically with a notice comment.
+
 ## Finding contributions to work on
 
 Looking at the existing issues is a great way to find something to contribute on. As our projects, by default, use the default GitHub issue labels (enhancement/bug/duplicate/help wanted/invalid/question/wontfix), looking at any 'help wanted' issues is a great place to start.
