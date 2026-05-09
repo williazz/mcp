@@ -60,7 +60,7 @@ jobs:
         with:
           use_bedrock: "true"
           use_sticky_comment: "true"
-          claude_args: --max-turns 15 --model us.anthropic.claude-sonnet-4-6
+          claude_args: --max-turns 15 --model us.anthropic.claude-sonnet-4-6 --allowed-tools "mcp__github_inline_comment__create_inline_comment,mcp__github_comment__update_claude_comment,Glob,Grep,LS,Read"
           prompt: |
             You are reviewing a pull request on the awslabs/mcp monorepo.
 
