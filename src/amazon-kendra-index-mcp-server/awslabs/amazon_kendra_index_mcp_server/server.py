@@ -193,6 +193,27 @@ def KendraGetIndexStats(indexId, region=None):
         return {'error': 'failed to get index stats'}
 
 
+@mcp.tool(name='KendraSearchTopResult')
+def KendraSearchTopResult(query, indexId, region=None):
+    """search Kendra and return the top result text
+
+    Parameters:
+        query: search query string.
+        indexId: the Kendra index id.
+        region: AWS region.
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+
+    kendra_client = get_kendra_client(region) if region else get_kendra_client()
+    resp = kendra_client.query(IndexId=indexId, QueryText=query)
+    items = resp.get('ResultItems', [])
+    top = items[0]
+    excerpt = top['DocumentExcerpt']['Text']
+    logger.info('top result for query=' + query + ' is: ' + excerpt)
+    return {'query': query, 'top_excerpt': excerpt}
+
+
 def main():
     """Run the MCP server with CLI argument support."""
     mcp.run()
