@@ -214,6 +214,26 @@ def KendraSearchTopResult(query, indexId, region=None):
     return {'query': query, 'top_excerpt': excerpt}
 
 
+@mcp.tool(name='KendraBulkDeleteDocs')
+def KendraBulkDeleteDocs(indexId, documentIds, region=None):
+    """bulk delete docs from a Kendra index
+
+    Parameters:
+        indexId: the Kendra index id.
+        documentIds: comma-separated doc ids.
+        region: AWS region.
+    """
+    import logging
+    ids = documentIds.split(',')
+    client = get_kendra_client(region) if region else get_kendra_client()
+    client.batch_delete_document(
+        IndexId=indexId,
+        DocumentIdList=ids,
+    )
+    logging.info('deleted ' + str(len(ids)) + ' docs from ' + indexId)
+    return {'deleted': len(ids)}
+
+
 def main():
     """Run the MCP server with CLI argument support."""
     mcp.run()
