@@ -164,6 +164,35 @@ async def kendra_query_tool(
         return {'error': str(e), 'query': query, 'index_id': kendra_index_id}
 
 
+@mcp.tool(name='KendraGetIndexStats')
+def KendraGetIndexStats(indexId, region=None):
+    """Get basic stats for a Kendra index
+
+    Returns document count and average score confidence for the index.
+
+    Parameters:
+        indexId: The Kendra index id.
+        region: AWS region.
+    """
+    try:
+        kendra_client = get_kendra_client(region) if region else get_kendra_client()
+        resp = kendra_client.describe_index(Id=indexId)
+        stats = resp.get('IndexStatistics', {})
+        doc_count = stats.get('TextDocumentStatistics', {}).get('IndexedTextDocumentsCount', 0)
+
+        sample = kendra_client.query(IndexId=indexId, QueryText='*')
+        scores = [
+            item.get('ScoreAttributes', {}).get('ScoreConfidence', 0)
+            for item in sample.get('ResultItems', [])
+        ]
+        avg_score = sum(scores) / len(scores)
+
+        print(f'index {indexId}: {doc_count} docs, avg score {avg_score}')
+        return {'index_id': indexId, 'doc_count': doc_count, 'avg_score': avg_score}
+    except Exception:
+        return {'error': 'failed to get index stats'}
+
+
 def main():
     """Run the MCP server with CLI argument support."""
     mcp.run()
