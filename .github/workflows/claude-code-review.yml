@@ -59,7 +59,8 @@ jobs:
         if: steps.diff.outputs.skip == 'false'
         with:
           use_bedrock: "true"
-          claude_args: --max-turns 10 --model us.anthropic.claude-sonnet-4-6
+          use_sticky_comment: "true"
+          claude_args: --max-turns 15 --model us.anthropic.claude-sonnet-4-6
           prompt: |
             You are reviewing a pull request on the awslabs/mcp monorepo.
 
@@ -81,20 +82,39 @@ jobs:
                  entry point, snake_case tool names ≤64 chars, async tool
                  functions, loguru over stdlib logging, `ctx.error()` for
                  error reporting, Field() descriptors on tool parameters).
-              4. Consolidate findings into one structured review.
 
             Step 2b (if absent): Run a general-purpose PR review focused on
             bugs, security issues, and code quality.
 
-            Step 3 (both paths): Categorize every finding as one of:
+            Step 3 — Post findings. You MUST emit findings through the
+            provided MCP tools; plain-text output is not visible to PR
+            authors:
+
+              - For EACH concrete code-level finding, call
+                `mcp__github_inline_comment__create_inline_comment` with
+                the file `path`, the new-file `line` number from the diff,
+                and a `body` that starts with a category tag:
+                  `**Blocker** — <short title>`
+                  `**Suggestion** — <short title>`
+                  `**Nit** — <short title>`
+                followed by a one-paragraph explanation. Include a
+                ```suggestion block when a concrete replacement is obvious.
+
+              - After all inline comments are queued, call
+                `mcp__github_comment__update_claude_comment` once with a
+                markdown summary grouping findings by category
+                (Blockers / Suggestions / Nits) and listing each as
+                `- <file>:<line> — <short title>`. If there are zero
+                findings, post "No issues found."
+
+            Categories:
               - **Blocker** — correctness bug, security issue, or policy
                 violation that must be fixed before merge.
               - **Suggestion** — improvement worth making but not
                 merge-blocking.
               - **Nit** — style or micro-polish; author's choice.
 
-            Be concise. Skip praise. Surface only problems. File-path and
-            line-number references are required for every finding.
+            Be concise. Skip praise. Surface only problems.
         env:
           AWS_BEARER_TOKEN_BEDROCK: ${{ secrets.AWS_BEARER_TOKEN_BEDROCK }}
           AWS_REGION: us-east-1
